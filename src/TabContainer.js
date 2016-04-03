@@ -22,7 +22,7 @@ let TabContainer = React.createClass({
 
         if (!error && !props.id) {
           error = new Error(
-            'In order to properly inialize Tabs in a way that is accessible to assistive technologies ' +
+            'In order to properly initialize Tabs in a way that is accessible to assistive technologies ' +
             '(such as screen readers) an `id` or a `generateChildId` prop to TabContainer is required');
         }
       }

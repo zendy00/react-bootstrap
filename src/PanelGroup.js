@@ -1,19 +1,69 @@
-import React, { cloneElement } from 'react';
+import React, { PropTypes, cloneElement } from 'react';
 import classNames from 'classnames';
-
+import uncontrollable from 'uncontrollable';
 import bootstrapUtils, { bsClass } from './utils/bootstrapUtils';
 import ValidComponentChildren from './utils/ValidComponentChildren';
 
-const PanelGroup = React.createClass({
+let idPropType = PropTypes.oneOfType([
+  PropTypes.string,
+  PropTypes.number
+]);
 
+const PanelGroup = React.createClass({
 
   propTypes: {
     accordion: React.PropTypes.bool,
-    activeKey: React.PropTypes.any,
-    className: React.PropTypes.string,
-    children: React.PropTypes.node,
-    defaultActiveKey: React.PropTypes.any,
-    onSelect: React.PropTypes.func
+
+    /**
+     * HTML id attribute, required if no `generateChildId` prop
+     * is specified.
+     */
+    id(props, ...args) {
+      let error = null;
+
+      if (!props.generateChildId) {
+        error = idPropType(props, ...args);
+
+        if (!error && !props.id) {
+          error = new Error(
+            'In order to properly initialize the PanelGroup in a way that is accessible to assistive technologies ' +
+            '(such as screen readers) an `id` or a `generateChildId` prop to PanelGroup is required');
+        }
+      }
+      return error;
+    },
+
+    /**
+     * A function that takes an eventKey and type and returns a
+     * unique id for each Panel heading and Panel Collapse. The function _must_ be a pure function,
+     * meaning it should always return the _same_ id for the same set of inputs. The default
+     * value requires that an `id` to be set for the PanelGroup.
+     *
+     * The `type` argument will either be `"tab"` or `"pane"`.
+     *
+     * @defaultValue (eventKey, type) => `${this.props.id}-${type}-${key}`
+     */
+    generateChildId: PropTypes.func,
+
+    /**
+     * A callback fired when a tab is selected.
+     *
+     * @controllable activeKey
+     */
+    onSelect: PropTypes.func,
+
+    /**
+     * The `eventKey` of the currently active tab.
+     *
+     * @controllable onSelect
+     */
+    activeKey: PropTypes.any
+  },
+
+  childContextTypes: {
+    $bs_panel_group: React.PropTypes.shape({
+      getId: React.PropTypes.func
+    })
   },
 
   getDefaultProps() {
@@ -22,28 +72,35 @@ const PanelGroup = React.createClass({
     };
   },
 
-  getInitialState() {
-    let defaultActiveKey = this.props.defaultActiveKey;
+  getChildContext() {
+    let getId = null;
 
+    if (this.props.accordion) {
+      getId = this.props.generateChildId
+        || ((key, type) => this.props.id ? `${this.props.id}-${type}-${key}` : null);
+    }
     return {
-      activeKey: defaultActiveKey
+      $bs_panel_group: { getId },
     };
   },
 
   render() {
     let classes = bootstrapUtils.getClassSet(this.props);
     let {className, ...props} = this.props;
-    if (this.props.accordion) { props.role = 'tablist'; }
+
+    if (this.props.accordion) {
+      props.role = props.role || 'tablist';
+    }
+
     return (
       <div {...props} className={classNames(className, classes)} onSelect={null}>
-        {ValidComponentChildren.map(props.children, this.renderPanel)}
+        { ValidComponentChildren.map(props.children, this.renderPanel) }
       </div>
     );
   },
 
   renderPanel(child, index) {
-    let activeKey =
-      this.props.activeKey != null ? this.props.activeKey : this.state.activeKey;
+    let activeKey = this.props.activeKey;
 
     let props = {
       bsStyle: child.props.bsStyle || this.props.bsStyle,
@@ -52,11 +109,8 @@ const PanelGroup = React.createClass({
     };
 
     if (this.props.accordion) {
-      props.headerRole = 'tab';
-      props.panelRole = 'tabpanel';
-      props.collapsible = true;
       props.expanded = (child.props.eventKey === activeKey);
-      props.onSelect = this.handleSelect;
+      props.onToggle = this.handleSelect.bind(null, child.props.eventKey);
     }
 
     return cloneElement(
@@ -65,28 +119,16 @@ const PanelGroup = React.createClass({
     );
   },
 
-  shouldComponentUpdate() {
-    // Defer any updates to this component during the `onSelect` handler.
-    return !this._isChanging;
-  },
-
-  handleSelect(key, e) {
-    e.preventDefault();
-
-    if (this.props.onSelect) {
-      this._isChanging = true;
+  handleSelect(key, expanded, e) {
+    if (expanded) {
       this.props.onSelect(key, e);
-      this._isChanging = false;
     }
-
-    if (this.state.activeKey === key) {
-      key = null;
-    }
-
-    this.setState({
-      activeKey: key
-    });
   }
 });
 
-export default bsClass('panel-group', PanelGroup);
+export default uncontrollable(
+  bsClass('panel-group', PanelGroup),
+  {
+    activeKey: 'onSelect'
+  }
+);

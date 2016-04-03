@@ -13,9 +13,15 @@ function curry(fn) {
   };
 }
 
-function prefix(props = {}, variant) {
-  invariant((props.bsClass || '').trim(), 'A `bsClass` prop is required for this component');
-  return props.bsClass + (variant ? '-' + variant : '');
+function prefix(props = {}, context = {}, variant) {
+  if (arguments.length === 2) {
+    variant = context;
+    context = {};
+  }
+  let bsClass = (props.bsClass || context.bsClass || '').trim();
+  invariant(bsClass, 'A `bsClass` prop is required for this component');
+
+  return bsClass + (variant ? '-' + variant : '');
 }
 
 export let bsClass = curry((defaultClass, Component) => {
