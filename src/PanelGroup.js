@@ -109,6 +109,7 @@ const PanelGroup = React.createClass({
     };
 
     if (this.props.accordion) {
+      props.collapsible = true;
       props.expanded = (child.props.eventKey === activeKey);
       props.onToggle = this.handleSelect.bind(null, child.props.eventKey);
     }

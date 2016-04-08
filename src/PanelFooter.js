@@ -8,7 +8,12 @@ let PanelFooter = React.createClass({
       bsClass: PropTypes.string
     })
   },
-
+  propTypes: {
+    bsRole: PropTypes.string
+  },
+  getDefaultProps() {
+    return { bsRole: 'footer' };
+  },
   render() {
     let { children } = this.props;
     return (

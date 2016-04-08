@@ -5,13 +5,20 @@ import { TAB, PANE } from './utils/tabUtils';
 
 
 let NavbarCollapse = React.createClass({
+  propTypes: {
+    bsRole: React.PropTypes.string
+  },
 
   contextTypes: {
     $bs_panel: React.PropTypes.shape({
       getId: React.PropTypes.func,
       bsClass: React.PropTypes.string,
-      expanded: React.PropTypes.bool,
+      expanded: React.PropTypes.bool
     })
+  },
+
+  getDefaultProps() {
+    return { bsRole: 'panel-collapse' };
   },
 
   render() {

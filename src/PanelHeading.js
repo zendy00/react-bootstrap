@@ -7,7 +7,8 @@ import { TAB } from './utils/tabUtils';
 let PanelHeading = React.createClass({
   propTypes: {
     componentClass: elementType,
-    title: PropTypes.bool
+    title: PropTypes.bool,
+    bsRole: PropTypes.string
   },
 
   contextTypes: {
@@ -15,6 +16,10 @@ let PanelHeading = React.createClass({
       getId: React.PropTypes.func,
       bsClass: PropTypes.string
     })
+  },
+
+  getDefaultProps() {
+    return { bsRole: 'heading' };
   },
 
   render() {
