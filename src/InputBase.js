@@ -110,9 +110,9 @@ class InputBase extends React.Component {
 
   renderHelp() {
     return this.props.help ? (
-      <span className="help-block" key="help">
+      <div className="help-block" key="help">
         {this.props.help}
-      </span>
+      </div>
     ) : null;
   }
 
@@ -130,11 +130,16 @@ class InputBase extends React.Component {
   }
 
   renderWrapper(children) {
-    return this.props.wrapperClassName ? (
-      <div className={this.props.wrapperClassName} key="wrapper">
+    let classes = {
+      "col-md-9": (this.props.label && !this.isCheckboxOrRadio()),
+      "col-md-12": (!this.props.label && !this.isCheckboxOrRadio())
+    }
+
+    return (
+      <div className={classNames(classes, this.props.wrapperClassName)} key="wrapper">
         {children}
       </div>
-    ) : children;
+    )
   }
 
   renderLabel(children) {
@@ -144,7 +149,7 @@ class InputBase extends React.Component {
     classes[this.props.labelClassName] = this.props.labelClassName;
 
     return this.props.label ? (
-      <label htmlFor={this.props.id} className={classNames(classes)} key="label">
+      <label htmlFor={this.props.id} className={classNames(classes, 'col-md-3')} key="label">
         {children}
         {this.props.label}
       </label>
